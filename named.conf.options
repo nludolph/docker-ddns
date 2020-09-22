@@ -4,5 +4,7 @@ options {
         recursion no;
         allow-transfer { none; };
         auth-nxdomain no;
-        listen-on-v6 { any; };
+        interface-interval 0;
+        listen-on-v6 { none; };
+        listen-on { any; };
 };
