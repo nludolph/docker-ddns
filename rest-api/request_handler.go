@@ -25,6 +25,7 @@ type WebserviceResponse struct {
 	Domains  []string
 	Address  string
 	AddrType string
+	ArpaAddr string
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extractors RequestDataExtractor) WebserviceResponse {
@@ -88,9 +89,35 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extr
 		response.Address = ip
 	}
 
+	response.ArpaAddr = ArpaAddress(response.Address)
+
 	response.Success = true
 
 	return response
+}
+
+func ArpaAddress(ip string) string {
+	if ipparser.ValidIP4(ip) {
+		// split into slice by dot .
+                addressSlice := strings.Split(ip, ".")
+                reverseSlice := []string{}
+                for i := range addressSlice {
+                        octet := string(addressSlice[len(addressSlice)-1-i])
+                        reverseSlice = append(reverseSlice, octet)
+                }
+                return strings.Join(reverseSlice, ".") + ".in-addr.arpa"
+	} else if ipparser.ValidIP6(ip) {
+		// split into slice by dot .
+		addressSlice := strings.ReplaceAll(ip,":","")
+		reverseSlice := []string{}
+		for i := range addressSlice {
+			octet := string(addressSlice[len(addressSlice)-1-i])
+			reverseSlice = append(reverseSlice, octet)
+		}
+                return strings.Join(reverseSlice, ".") + ".ip6.arpa"
+        } else {
+                panic("invalid address")
+        }
 }
 
 func getUserIP(r *http.Request) (string, error) {

@@ -46,6 +46,10 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 	if result.AddrType != "A" {
 		t.Fatalf("Expected WebserviceResponse.AddrType to be A")
 	}
+
+        if result.ArpaAddr != "4.3.2.1.in-addr.arpa" {
+                t.Fatalf("Expected WebserviceResponse.ArpaAddr to be 4.3.2.1.in-addr.arpa (" + result.ArpaAddr + ")")
+        }
 }
 
 func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(t *testing.T) {
@@ -71,6 +75,10 @@ func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(
 	if result.AddrType != "A" {
 		t.Fatalf("Expected WebserviceResponse.AddrType to be A")
 	}
+
+        if result.ArpaAddr != "4.3.2.1.in-addr.arpa" {
+                t.Fatalf("Expected WebserviceResponse.ArpaAddr to be 4.3.2.1.in-addr.arpa (" + result.ArpaAddr + ")")
+        }
 }
 
 func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidObject(t *testing.T) {

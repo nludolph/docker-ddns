@@ -56,7 +56,7 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range response.Domains {
-		result := UpdateRecord(domain, response.Address, response.AddrType)
+		result := UpdateRecord(domain, response.Address, response.AddrType, response.ArpaAddr)
 
 		if result != "" {
 			response.Success = false
@@ -68,7 +68,7 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Success = true
-	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
+	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s (%s)", response.AddrType, response.Domain, response.Address, response.ArpaAddr)
 
 	w.Write([]byte(fmt.Sprintf("good %s\n", response.Address)))
 }
@@ -87,7 +87,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range response.Domains {
-		result := UpdateRecord(domain, response.Address, response.AddrType)
+		result := UpdateRecord(domain, response.Address, response.AddrType, response.ArpaAddr)
 
 		if result != "" {
 			response.Success = false
@@ -99,12 +99,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Success = true
-	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
+	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s (%s)", response.AddrType, response.Domain, response.Address, response.ArpaAddr)
 
 	json.NewEncoder(w).Encode(response)
 }
 
-func UpdateRecord(domain string, ipaddr string, addrType string) string {
+func UpdateRecord(domain string, ipaddr string, addrType string, arpaAddr string) string {
 	log.Println(fmt.Sprintf("%s record update request: %s -> %s", addrType, domain, ipaddr))
 
 	f, err := ioutil.TempFile(os.TempDir(), "dyndns")
@@ -116,9 +116,11 @@ func UpdateRecord(domain string, ipaddr string, addrType string) string {
 	w := bufio.NewWriter(f)
 
 	w.WriteString(fmt.Sprintf("server %s\n", appConfig.Server))
-	w.WriteString(fmt.Sprintf("zone %s\n", appConfig.Zone))
-	w.WriteString(fmt.Sprintf("update delete %s.%s %s\n", domain, appConfig.Domain, addrType))
-	w.WriteString(fmt.Sprintf("update add %s.%s %v %s %s\n", domain, appConfig.Domain, appConfig.RecordTTL, addrType, ipaddr))
+//	w.WriteString(fmt.Sprintf("zone %s\n", appConfig.Zone))
+	w.WriteString(fmt.Sprintf("update delete %s %s\n", domain, addrType))
+	w.WriteString(fmt.Sprintf("update add %s %v %s %s\n\n", domain, appConfig.RecordTTL, addrType, ipaddr))
+        w.WriteString(fmt.Sprintf("update delete %s IN PTR\n", arpaAddr))
+        w.WriteString(fmt.Sprintf("update add %s %v IN PTR %s.%s\n", arpaAddr, appConfig.RecordTTL, domain, appConfig.Domain))
 	w.WriteString("send\n")
 
 	w.Flush()
