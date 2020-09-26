@@ -120,7 +120,7 @@ func UpdateRecord(domain string, ipaddr string, addrType string, arpaAddr string
 	w.WriteString(fmt.Sprintf("update delete %s %s\n", domain, addrType))
 	w.WriteString(fmt.Sprintf("update add %s %v %s %s\n\n", domain, appConfig.RecordTTL, addrType, ipaddr))
         w.WriteString(fmt.Sprintf("update delete %s IN PTR\n", arpaAddr))
-        w.WriteString(fmt.Sprintf("update add %s %v IN PTR %s.%s\n", arpaAddr, appConfig.RecordTTL, domain, appConfig.Domain))
+        w.WriteString(fmt.Sprintf("update add %s %v IN PTR %s\n", arpaAddr, appConfig.RecordTTL, domain))
 	w.WriteString("send\n")
 
 	w.Flush()
